@@ -117,6 +117,7 @@
             }
 
             document.getElementById("mine").disabled = true
+            document.getElementById("claim").disabled = true
             console.log('MINE')
             document.querySelector('#result').innerText = ''
 
@@ -136,6 +137,8 @@
 
                 if (remains > 0) {
                     document.querySelector('#result').innerText = '[Finished] - Error - Mine to soon'
+                    document.getElementById("mine").disabled = false
+                    document.getElementById("claim").disabled = false
                     return
                 }
 
@@ -171,6 +174,7 @@
                 console.log(r)
                 document.querySelector('#result').innerText = '[Finished] - Successful - Transaction id ' + r.transaction_id
                 document.getElementById("claim").disabled = true
+                document.getElementById("mine").disabled = false
             })
             .catch(e => {
                 console.error(e)
