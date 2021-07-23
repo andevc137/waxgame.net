@@ -10,12 +10,13 @@
         <h4>Hello <span id="waxid"></span>!</h4>
         <button id="login" onclick="login()">WAX Login</button>
         <button id="mine" onclick="mine()">AW mine</button>
-        <p>wait <span id="wtime"></span> s to mine!</p>
+        <p>Delay <span id="delay"></span> s !</p>
         <p id="result"></p>
     </body>
     <script>
         let waxid;
         let nonce;
+        let delay;
 
         async function login() {
             try {
@@ -67,12 +68,12 @@
             calc.delay.sort()
 
             if (calc.delay.length >= 3) calc.delay.shift()
-            const delay = calc.delay.reduce((a,b) => a + b, 0)
+            const toolsDelay = calc.delay.reduce((a,b) => a + b, 0)
 
             return {
                 ...miners,
                 bags,
-                delay: landMulti * delay,
+                delay: landMulti * toolsDelay,
                 difficulty: landDifficulty * calc.difficulty
             }
         }
@@ -127,13 +128,16 @@
                     catch{}
                 }
 
-                const delay = moment(minerInfo.last_mine + '.000Z').add(minerInfo.delay, 'seconds').diff(new Date(), 'seconds')
-                console.log('delay', delay)
+                delay = minerInfo.delay
+                const remains = moment(minerInfo.last_mine + '.000Z').add(delay, 'seconds').diff(new Date(), 'seconds')
+                console.log('remains', remains)
 
-                if (delay > 0) {
+                if (remains > 0) {
                     document.querySelector('#result').innerText = '[Finished] - Error - Mine to soon'
                     return
                 }
+
+                document.querySelector('#delay').innerText = '' + delay
 
                 nonce = GenerateNonce(waxid, waxid, minerInfo.difficulty, minerInfo.last_mine_tx).rand_str
             }
