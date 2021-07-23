@@ -10,6 +10,7 @@
         <h4>Hello <span id="waxid"></span>!</h4>
         <button id="login" onclick="login()">WAX Login</button>
         <button id="mine" onclick="mine()">AW mine</button>
+        <button id="claim" onclick="claim()" disabled>AW claim</button>
         <p>Delay <span id="delay"></span> s !</p>
         <p id="result"></p>
     </body>
@@ -142,6 +143,11 @@
             }
 
             console.log('nonce', nonce)
+            document.getElementById("claim").disabled = false
+        }
+
+        function claim() {
+            document.getElementById("claim").disabled = true
 
             wax.api.transact({
                 actions: [{
@@ -164,12 +170,12 @@
                 nonce = null
                 console.log(r)
                 document.querySelector('#result').innerText = '[Finished] - Successful - Transaction id ' + r.transaction_id
-                document.getElementById("mine").disabled = false
+                document.getElementById("claim").disabled = true
             })
             .catch(e => {
                 console.error(e)
                 document.querySelector('#result').innerText = '[Finished] - Error - ' + e.message
-                document.getElementById("mine").disabled = false
+                document.getElementById("claim").disabled = false
             })
         }
     </script>
