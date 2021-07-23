@@ -67,7 +67,7 @@
                 return a
             }, {delay: [], difficulty: 0})
 
-            calc.delay.sort()
+            calc.delay.sort((a,b) => Number(a) - Number(b))
 
             if (calc.delay.length >= 3) calc.delay.shift()
             const toolsDelay = calc.delay.reduce((a,b) => a + b, 0)
