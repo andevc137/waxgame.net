@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="https://momentjs.com/downloads/moment.js"></script>
+        <script src="bundle.js"></script>
+    </head>
+    <body>
+        <h4>Hello <span id="waxid"></span>!</h4>
+        <button id="login" onclick="login()">WAX Login</button>
+        <button id="mine" onclick="mine()">AW mine</button>
+        <p>wait <span id="wtime"></span> s to mine!</p>
+        <p id="result"></p>
+    </body>
+    <script>
+        let waid;
+        let nonce;
+
+        async function login() {
+            try {
+                const userAccount = await wax.login();
+                document.getElementById("waxid").innerText = userAccount;
+                waxid = userAccount;
+                document.getElementById("login").disabled = true
+            } catch (e) {
+                document.getElementById("waxid").innerText = e.message;
+            }
+        }
+
+        async function getLastTx() {
+            return axios.get('/api/get_lastmine/' + waxid).then(res => {
+                return res.data.rows[0].last_mine_tx
+            })
+        }
+
+        async function prepareData() {
+            const data = await Promise.all([
+                axios.get(`/api/get_table_rows/${waxid}/miners`),
+                axios.get(`/api/get_table_rows/${waxid}/bags`)
+            ])
+
+            const bags = data[1].data.rows[0].items
+            const miners = data[0].data.rows[0]
+
+            const procs = [
+                axios.get(`/api/atomicassets/${miners.current_land}`)
+            ]
+
+            for(const itemid of bags) {
+                procs.push(axios.get(`/api/atomicassets/${itemid}`))
+            }
+
+            const itemsData = await Promise.all(procs)
+
+            const landMulti = itemsData[0].data.data.data.delay / 10
+            const landDifficulty = itemsData[0].data.data.data.difficulty
+
+            itemsData.shift()
+            const calc = itemsData.reduce((a, o) => {
+                a.delay.push(o.data.data.data.delay)
+                a.difficulty += o.data.data.data.difficulty
+
+                return a
+            }, {delay: [], difficulty: 0})
+
+            calc.delay.sort()
+
+            if (calc.delay.length >= 3) calc.delay.shift()
+            const delay = calc.delay.reduce((a,b) => a + b, 0)
+
+            return {
+                ...miners,
+                bags,
+                delay: landMulti * delay,
+                difficulty: landDifficulty * calc.difficulty
+            }
+        }
+
+        async function awaction(action, data) {
+            document.querySelector('#result').innerText = ''
+
+            wax.api.transact({
+                actions: [{
+                    account: "m.federation",
+                    name: action,
+                    authorization: [{
+                        actor: waxid,
+                        permission: "active"
+                    }],
+                    data: data
+                }]
+            }, {
+                blocksBehind: 3,
+                expireSeconds: 30
+            })
+            .then(r => {
+                nonce = null
+                console.log(r)
+                document.querySelector('#result').innerText = '[Finished] - Successful - Transaction id ' + r.transaction_id
+            })
+            .catch(e => {
+                console.error(e)
+                document.querySelector('#result').innerText = '[Finished] - Error - ' + e.message
+            })
+        }
+
+        async function mine() {
+            document.getElementById("login").disabled = true
+            console.log('MINE')
+            document.querySelector('#result').innerText = ''
+
+            if (! nonce) {
+                let minerInfo
+                while(! minerInfo) {
+                    try{
+                        minerInfo = await prepareData()
+                    }
+                    catch{}
+                }
+
+                const delay = moment(minerInfo.last_mine + '.000Z').add(minerInfo.delay, 'seconds').diff(new Date(), 'seconds')
+                console.log('delay', delay)
+
+                if (delay > 0) {
+                    document.querySelector('#result').innerText = '[Finished] - ERROR - Mine to soon'
+                    return
+                }
+                return
+
+                nonce = GenerateNonce(waxid, waxid, minerInfo.difficulty, minerInfo.last_mine_tx).rand_str
+            }
+
+            console.log('nonce', nonce)
+
+            wax.api.transact({
+                actions: [{
+                    account: "m.federation",
+                    name: "mine",
+                    authorization: [{
+                        actor: waxid,
+                        permission: "active"
+                    }],
+                    data: {
+                        miner: waxid,
+                        nonce: nonce
+                    }
+                }]
+            }, {
+                blocksBehind: 3,
+                expireSeconds: 30
+            })
+            .then(r => {
+                nonce = null
+                console.log(r)
+                document.querySelector('#result').innerText = '[Finished] - Transaction id ' + r.transaction_id
+                document.getElementById("login").disabled = false
+            })
+            .catch(e => {
+                console.error(e)
+                document.querySelector('#result').innerText = '[Finished] - An error occus ' + e.message
+                document.getElementById("login").disabled = false
+            })
+        }
+    </script>
+</html>
