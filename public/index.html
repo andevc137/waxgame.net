@@ -79,7 +79,7 @@
 
         async function awaction(action, data) {
             if (! waxid) {
-                document.querySelector('#result').innerText = '[Finished] - ERROR - Login first'
+                document.querySelector('#result').innerText = '[Finished] - Error - Login first'
                 return
             }
             document.querySelector('#result').innerText = ''
@@ -99,7 +99,6 @@
                 expireSeconds: 30
             })
             .then(r => {
-                nonce = null
                 console.log(r)
                 document.querySelector('#result').innerText = '[Finished] - Successful - Transaction id ' + r.transaction_id
             })
@@ -111,7 +110,7 @@
 
         async function mine() {
             if (! waxid) {
-                document.querySelector('#result').innerText = '[Finished] - ERROR - Login first'
+                document.querySelector('#result').innerText = '[Finished] - Error - Login first'
                 return
             }
 
@@ -132,7 +131,7 @@
                 console.log('delay', delay)
 
                 if (delay > 0) {
-                    document.querySelector('#result').innerText = '[Finished] - ERROR - Mine to soon'
+                    document.querySelector('#result').innerText = '[Finished] - Error - Mine to soon'
                     return
                 }
 
@@ -161,12 +160,12 @@
             .then(r => {
                 nonce = null
                 console.log(r)
-                document.querySelector('#result').innerText = '[Finished] - Transaction id ' + r.transaction_id
+                document.querySelector('#result').innerText = '[Finished] - Successful - Transaction id ' + r.transaction_id
                 document.getElementById("mine").disabled = false
             })
             .catch(e => {
                 console.error(e)
-                document.querySelector('#result').innerText = '[Finished] - An error occus ' + e.message
+                document.querySelector('#result').innerText = '[Finished] - Error - ' + e.message
                 document.getElementById("mine").disabled = false
             })
         }
