@@ -131,13 +131,12 @@
                 delay = minerInfo.delay
                 const remains = moment(minerInfo.last_mine + '.000Z').add(delay, 'seconds').diff(new Date(), 'seconds')
                 console.log('remains', remains)
+                document.querySelector('#delay').innerText = '' + delay
 
                 if (remains > 0) {
                     document.querySelector('#result').innerText = '[Finished] - Error - Mine to soon'
                     return
                 }
-
-                document.querySelector('#delay').innerText = '' + delay
 
                 nonce = GenerateNonce(waxid, waxid, minerInfo.difficulty, minerInfo.last_mine_tx).rand_str
             }
