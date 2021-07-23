@@ -78,6 +78,10 @@
         }
 
         async function awaction(action, data) {
+            if (! waxid) {
+                document.querySelector('#result').innerText = '[Finished] - ERROR - Login first'
+                return
+            }
             document.querySelector('#result').innerText = ''
 
             wax.api.transact({
@@ -106,7 +110,12 @@
         }
 
         async function mine() {
-            document.getElementById("login").disabled = true
+            if (! waxid) {
+                document.querySelector('#result').innerText = '[Finished] - ERROR - Login first'
+                return
+            }
+
+            document.getElementById("mine").disabled = true
             console.log('MINE')
             document.querySelector('#result').innerText = ''
 
@@ -154,12 +163,12 @@
                 nonce = null
                 console.log(r)
                 document.querySelector('#result').innerText = '[Finished] - Transaction id ' + r.transaction_id
-                document.getElementById("login").disabled = false
+                document.getElementById("mine").disabled = false
             })
             .catch(e => {
                 console.error(e)
                 document.querySelector('#result').innerText = '[Finished] - An error occus ' + e.message
-                document.getElementById("login").disabled = false
+                document.getElementById("mine").disabled = false
             })
         }
     </script>
