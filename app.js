@@ -8,6 +8,7 @@ const get_tx = require('./api/get_tx')
 const check_nft = require('./api/check_nft')
 const get_table_rows = require('./api/get_table_rows')
 const atomicassets = require('./api/atomicassets')
+const get_tools = require('./api/get_tools')
 
 const app = express()
 const port = 80
@@ -22,6 +23,7 @@ app.use('/api/get_lastmine', get_lastmine)
 app.use('/api/get_tx', get_tx)
 app.use('/api/get_table_rows', get_table_rows)
 app.use('/api/atomicassets', atomicassets)
+app.use('/api/get_tools', get_tools)
 
 app.use('/', express.static(path.join(__dirname, 'public')))
 
