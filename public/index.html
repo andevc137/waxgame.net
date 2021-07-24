@@ -81,17 +81,18 @@
             }
         }
 
-        async function awaction(action, data) {
+        async function makeTransaction(action, data) {
             if (! waxid) {
                 document.querySelector('#result').innerText = '[Finished] - Error - Login first'
                 return
             }
             document.querySelector('#result').innerText = ''
 
+            // action = { account: "m.federation", name: "setbag"}
+
             wax.api.transact({
                 actions: [{
-                    account: "m.federation",
-                    name: action,
+                    ...action,
                     authorization: [{
                         actor: waxid,
                         permission: "active"
