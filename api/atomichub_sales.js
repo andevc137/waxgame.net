@@ -49,12 +49,15 @@ router.post('/', async (req, res) => {
         'sec-fetch-dest': 'empty', 
         'referer': 'https://wax.atomichub.io/', 
         'accept-language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7,es-US;q=0.6,es;q=0.5,fr-FR;q=0.4,fr;q=0.3,mt;q=0.2', 
-        'X-Forwarded-For': `${getRandom(1,255)}.${getRandom(1,255)}.${getRandom(1,255)}.${getRandom(1,255)}`, 
-        'Cookie': '__cflb=04dToa849CY9sDa1FETRSb1CAAKDvopN4dq1rtQWRq'
+        'X-Forwarded-For': `${getRandom(1,255)}.${getRandom(1,255)}.${getRandom(1,255)}.${getRandom(1,255)}`
     }
 
     if (req.body.hasOwnProperty('cookie')) {
         headers['Cookie'] = req.body.cookie
+    }
+
+    if (req.body.hasOwnProperty('useragent')) {
+        headers['user-agent'] = req.body.useragent
     }
 
     const config = {

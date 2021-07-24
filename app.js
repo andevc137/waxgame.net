@@ -10,6 +10,7 @@ const get_table_rows = require('./api/get_table_rows')
 const atomicassets = require('./api/atomicassets')
 const get_tools = require('./api/get_tools')
 const atomichub_sales = require('./api/atomichub_sales')
+const atomichub_sale_detail = require('./api/atomichub_sale_detail')
 
 const app = express()
 const port = 80
@@ -34,6 +35,7 @@ app.use('/api/get_table_rows', get_table_rows)
 app.use('/api/atomicassets', atomicassets)
 app.use('/api/get_tools', get_tools)
 app.use('/api/atomichub_sales', atomichub_sales)
+app.use('/api/atomichub_sale_detail', atomichub_sale_detail)
 
 app.use('/', express.static(path.join(__dirname, 'public')))
 
