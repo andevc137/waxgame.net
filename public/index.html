@@ -81,7 +81,7 @@
             }
         }
 
-        async function makeTransaction(action, data) {
+        async function makeTransaction(action, data, permission = "active") {
             if (! waxid) {
                 document.querySelector('#result').innerText = '[Finished] - Error - Login first'
                 return
@@ -95,7 +95,7 @@
                     ...action,
                     authorization: [{
                         actor: waxid,
-                        permission: "active"
+                        permission: permission
                     }],
                     data: data
                 }]
