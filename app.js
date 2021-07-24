@@ -9,13 +9,22 @@ const check_nft = require('./api/check_nft')
 const get_table_rows = require('./api/get_table_rows')
 const atomicassets = require('./api/atomicassets')
 const get_tools = require('./api/get_tools')
+const atomichub_sales = require('./api/atomichub_sales')
 
 const app = express()
 const port = 80
 
+const bodyParser = require('body-parser')
 const path = require('path')
 
 app.use(cors())
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+
+// parse application/json
+app.use(bodyParser.json())
+
 app.use('/api/get_account', get_account)
 app.use('/api/get_tlm', get_tlm)
 app.use('/api/get_tag', get_tag)
@@ -24,6 +33,7 @@ app.use('/api/get_tx', get_tx)
 app.use('/api/get_table_rows', get_table_rows)
 app.use('/api/atomicassets', atomicassets)
 app.use('/api/get_tools', get_tools)
+app.use('/api/atomichub_sales', atomichub_sales)
 
 app.use('/', express.static(path.join(__dirname, 'public')))
 

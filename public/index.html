@@ -113,6 +113,41 @@
             })
         }
 
+        async function transact(actions) {
+            if (! waxid) {
+                document.querySelector('#result').innerText = '[Finished] - Error - Login first'
+                return
+            }
+
+            document.querySelector('#result').innerText = ''
+
+            actions = actions.map(r => {
+                if (! r.hasOwnProperty('authorization')) {
+                    r.authorization = [{
+                        actor: waxid,
+                        permission: 'active'
+                    }]
+                }
+
+                return r
+            })
+
+            wax.api.transact({
+                actions: actions
+            }, {
+                blocksBehind: 3,
+                expireSeconds: 30
+            })
+            .then(r => {
+                console.log(r)
+                document.querySelector('#result').innerText = '[Finished] - Successful - Transaction id ' + r.transaction_id
+            })
+            .catch(e => {
+                console.error(e)
+                document.querySelector('#result').innerText = '[Finished] - Error - ' + e.message
+            })
+        }
+
         async function mine() {
             if (! waxid) {
                 document.querySelector('#result').innerText = '[Finished] - Error - Login first'
