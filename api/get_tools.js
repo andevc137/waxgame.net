@@ -21,6 +21,14 @@ router.get('/:account', async (req, res) => {
     const url = `${base_api}/atomicassets/v1/assets?owner=${account}&page=1&limit=1000&order=desc&sort=asset_id`
     const mockIp = `${getRandom(1,255)}.${getRandom(1,255)}.${getRandom(1,255)}.${getRandom(1,255)}`
 
+    let schemaName = 'tool.worlds'
+    let limit = 3
+    let isSlice = true
+
+    if (req.query.hasOwnProperty('schema_name')) schemaName = req.query['schema_name']
+    if (req.query.hasOwnProperty('no_slice')) isSlice = false
+    if (req.query.hasOwnProperty('limit')) limit = Number(limit)
+
     await axios.get(url,
     {
         headers: {
@@ -30,9 +38,10 @@ router.get('/:account', async (req, res) => {
     })
     .then((resp) => {
         if(resp.data) {
-            let data = resp.data.data.filter(r => r.schema.schema_name === "tool.worlds")
+            let data = resp.data.data.filter(r => r.schema.schema_name === schemaName)
             data.sort((a,b) => Number(b.data.ease) - Number(a.data.ease))
-            data = data.slice(0, 3)
+            if (isSlice)
+                data = data.slice(0, limit)
             return res.status(200).send(data.map(r => r.asset_id))
         }
     })

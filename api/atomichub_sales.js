@@ -26,7 +26,7 @@ router.post('/', async (req, res) => {
     const payload = {}
     Object.assign(payload, filter)
     // copy data
-    for(const i of ['sort', 'order', 'match']) {
+    for(const i of ['sort', 'order', 'match', 'schema_name', 'collection_name']) {
         if (req.body.hasOwnProperty(i)) {
             payload[i] = req.body[i]
         }
