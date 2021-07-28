@@ -44,6 +44,9 @@
                 axios.get(`/api/get_table_rows/${waxid}/bags`)
             ])
 
+            if (data[0].data.rows.length * data[0].data.rows.length === 0)
+                throw -1
+
             const bags = data[1].data.rows[0].items
             const miners = data[0].data.rows[0]
 
@@ -160,12 +163,21 @@
             document.querySelector('#result').innerText = ''
 
             if (! nonce) {
+                let maxTries = 10
+                let tries = 0
                 let minerInfo
-                while(! minerInfo) {
+                while(! minerInfo && ++tries < maxTries) {
                     try{
                         minerInfo = await prepareData()
                     }
-                    catch{}
+                    catch (e) {
+                        if (e === -1) {
+                            document.querySelector('#result').innerText = '[Finished] - Error - Account Invalid'
+                            document.getElementById("mine").disabled = false
+                            document.getElementById("claim").disabled = false
+                            return
+                        }
+                    }
                 }
 
                 delay = minerInfo.delay
