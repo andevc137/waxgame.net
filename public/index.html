@@ -44,7 +44,7 @@
                 axios.get(`/api/get_table_rows/${waxid}/bags`)
             ])
 
-            if (data[0].data.rows.length * data[0].data.rows.length === 0)
+            if (data[0].data.rows.length * data[1].data.rows.length === 0)
                 throw -1
 
             const bags = data[1].data.rows[0].items
