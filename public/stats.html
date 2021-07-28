@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AW claim stats</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        canvas { background-color : #eee;}
+    </style>
+</head>
+<body>
+    <canvas id="chartJSContainer" style="height:80vh; width:90vw"></canvas>
+    <div>
+        <p><span id="totalClaim">NaN</span> claims received <span id="totalTlm">NaN</span>TLM in 24h.</p>
+    </div>
+</body>
+<script>
+    const groupBy = function(xs, key) {
+        return xs.reduce(function(rv, x) {
+            (rv[x[key]] = rv[x[key]] || []).push(x);
+            return rv;
+        }, {});
+    };
+
+    function claims() {
+        return axios.get('http://103.156.90.173:3001/account/claims').then(r => r.data)
+    }
+
+    async function createHash(message) {
+        const msgBuffer = new TextEncoder().encode(message);                    
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        return hashHex;
+    }
+
+    (async function() {
+        const groupNameAsText = localStorage.getItem('group');
+        const res = await claims();
+
+        document.querySelector('#totalClaim').innerText = res.data.length
+        document.querySelector('#totalTlm').innerText = res.data.reduce((a, b) => a + b.claimValue, 0).toFixed(4)
+
+        const data = groupBy(res.data, 'group');
+
+        const group = Object.keys(data)
+        let labels = group.map(r => r.substring(0, 8))
+
+        if (groupNameAsText !== null && groupNameAsText.trim() !== '') {
+            try {
+                const groupName = JSON.parse(groupNameAsText)
+                const hashes = await Promise.all(groupName.map(async r => createHash(r)))
+                const mapGroupName = {}
+                for(let i = 0; i < groupName.length; i++) mapGroupName[hashes[i]] = groupName[i]
+
+                console.log(mapGroupName, groupName)
+                labels = group.map(r => r in mapGroupName ? mapGroupName[r] : r.substring(0, 8))
+            }
+            catch(e){console.log('map group name error', e)}
+        }
+
+        const accounts = {}
+
+        for(const g of group) {
+            accounts[g] = Object.keys(groupBy(data[g], 'accountId')).length
+        }
+
+        var options = {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                        label: '# of TLM',
+                        data: group.map(r => data[r].reduce((a, b) => a + b.claimValue, 0)),
+                        borderWidth: 1,
+                        borderColor: '#c0392b',
+                        backgroundColor: '#e74c3c',
+                    },
+                    {
+                        label: '# of AVG per account x10',
+                        data: group.map(r => 10 * data[r].reduce((a, b) => a + b.claimValue, 0) / accounts[r]),
+                        borderWidth: 1,
+                        borderColor: '#2980b9',
+                        backgroundColor: '#3498db',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'AW claim stats'
+                    }
+                }
+            },
+        }
+
+        var ctx = document.getElementById('chartJSContainer').getContext('2d');
+        new Chart(ctx, options);
+
+    })();
+</script>
+</html>
