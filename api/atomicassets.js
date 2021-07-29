@@ -15,8 +15,9 @@ function getRandom(min, max) {
 router.get('/:id', async (req, res) => {
     let assetid = req.params.id
     let jsonpath = path.join(__dirname, `../data/${assetid}.json`)
+    let sync = req.query.hasOwnProperty('sync') && Number(req.query['sync']) === 1
 
-    if (fs.existsSync(jsonpath)) {
+    if (fs.existsSync(jsonpath) && ! sync) {
         const json = require(`../data/${assetid}.json`)
         return res.status(200).send(json)
     }
