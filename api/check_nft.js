@@ -8,7 +8,7 @@ const base_api = [
     'https://wax.pink.gg',
     'https://wax.cryptolions.io',
     'https://wax.dapplica.io',
-    'https://api.wax.liquidstudios.io',
+    // 'https://api.wax.liquidstudios.io',
     'https://wax.eosn.io',
     'https://api.wax.alohaeos.com',
     'https://wax.greymass.com'
