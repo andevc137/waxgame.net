@@ -13,7 +13,7 @@ const base_api = [
     'https://api.wax.alohaeos.com',
     'https://wax.greymass.com',
     'https://wax-bp.wizardsguild.one',
-    'https://apiwax.3dkrender.com',
+    // 'https://apiwax.3dkrender.com',
     'https://wax.eu.eosamsterdam.net',
     // 'https://wax.csx.io',
     'https://wax.eoseoul.io',
