@@ -30203,7 +30203,8 @@ const { Serialize } = require("eosjs/dist/index.js");
 const crypto = require("crypto-browserify/index.js");
 fs = require('fs');
 
-window.wax = new waxjs.WaxJS('https://api.waxsweden.org');
+// window.wax = new waxjs.WaxJS('https://api.waxsweden.org');
+window.wax = new waxjs.WaxJS('https://wax.greymass.com');
 
 const getRand = () => {
             const arr = new Uint8Array(8);
