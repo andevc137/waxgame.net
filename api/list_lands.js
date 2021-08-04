@@ -30,4 +30,13 @@ router.get('/', async (req, res) => {
     )
 })
 
+router.get('/:land_id', async (req, res) => {
+    const lands = require('../data/lands.json')
+    const land_id = req.params.land_id
+
+    return res.status(200).send(
+        lands.find(r => r.id === String(land_id))
+    )
+})
+
 module.exports = router;

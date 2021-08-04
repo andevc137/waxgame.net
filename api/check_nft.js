@@ -20,9 +20,9 @@ function getRandom(min, max) {
 
 router.get('/:account', async (req, res) => {
     let account = req.params.account
-    account = account.match(/^[a-z0-9.]{4,5}(?:.wam)/gm)
-    if(!account || typeof account == "undefined" || account == '') return res.status(400).send({msg: "Invalid Account."})
-    account = account[0]
+    // account = account.match(/^[a-z0-9.]{4,5}(?:.wam)/gm)
+    // if(!account || typeof account == "undefined" || account == '') return res.status(400).send({msg: "Invalid Account."})
+    // account = account[0]
     let index = getRandom(0, base_api.length)
     const url = `${base_api[index]}/v1/chain/get_table_rows`
     console.log(url+` ${account}`)

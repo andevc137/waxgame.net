@@ -17,7 +17,7 @@ const base_api = [
     // 'https://wax.csx.io',
     'https://wax.eoseoul.io',
     'https://wax.eosphere.io',
-    'https://api.waxeastern.cn'
+    // 'https://api.waxeastern.cn'
 ]
 
 const filter = {
