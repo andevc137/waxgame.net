@@ -6,6 +6,7 @@
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script src="https://momentjs.com/downloads/moment.js"></script>
         <script src="bundle.js"></script>
+        <script src="waxjs.js"></script>
     </head>
     <body>
         <h4>Hello <span id="waxid"></span>!</h4>
@@ -20,6 +21,11 @@
         let waxid;
         let nonce;
         let delay;
+
+        const wax = new waxjs.WaxJS({
+            rpcEndpoint: 'https://wax.greymass.com',
+            freeBandwidth: true
+        });
 
         async function login() {
             try {
