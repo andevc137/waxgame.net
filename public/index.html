@@ -16,6 +16,7 @@
         <p>Delay <span id="delay"></span> s !</p>
         <p>Next claim in <span id="next-claim">NaN</span>s.</p>
         <p id="result"></p>
+        <p id="nonce" style="display: none;"></p>
     </body>
     <script>
         let waxid;
@@ -200,6 +201,7 @@
                 }
 
                 nonce = GenerateNonce(waxid, waxid, minerInfo.difficulty, minerInfo.last_mine_tx).rand_str
+                document.querySelector("#nonce").innerText = nonce + ""
             }
 
             console.log('nonce', nonce)
