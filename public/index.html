@@ -6,6 +6,7 @@
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script src="https://momentjs.com/downloads/moment.js"></script>
         <script src="bundle.js"></script>
+        <script src="eosjs-jssig-debug.js"></script>
         <script src="waxjs.js"></script>
     </head>
     <body>
@@ -22,13 +23,31 @@
         let waxid;
         let nonce;
         let delay;
+        let wax;
+        let enableBoostCpu = false;
+        let boostAccount;
 
-        const wax = new waxjs.WaxJS({
-            rpcEndpoint: 'https://wax.greymass.com',
-            freeBandwidth: true
-        });
+        function createWax(_boostAccount = null, _privateKey = null) {
+            const params = {
+                rpcEndpoint: 'https://wax.greymass.com',
+                freeBandwidth: true
+            };
+
+            if (_boostAccount && _privateKey) {
+                enableBoostCpu = true;
+                boostAccount = _boostAccount;
+                params.jsSignatureProvider = new eosjs_jssig.default([_privateKey]);
+            }
+
+            // create wax instance
+            wax = new waxjs.WaxJS(params);
+        }
 
         async function login() {
+            if (! wax) {
+                createWax();
+            }
+
             try {
                 const userAccount = await wax.login();
                 document.getElementById("waxid").innerText = userAccount;
@@ -210,20 +229,33 @@
 
         function claim() {
             document.getElementById("claim").disabled = true
+            const actions = [{
+                account: "m.federation",
+                name: "mine",
+                authorization: [{
+                    actor: waxid,
+                    permission: "active"
+                }],
+                data: {
+                    miner: waxid,
+                    nonce: nonce
+                }
+            }];
 
-            wax.api.transact({
-                actions: [{
-                    account: "m.federation",
-                    name: "mine",
+            if (enableBoostCpu && boostAccount) {
+                actions.unshift({
+                    account: "boost.wax",
+                    name: "noop",
                     authorization: [{
-                        actor: waxid,
+                        actor: boostAccount,
                         permission: "active"
                     }],
-                    data: {
-                        miner: waxid,
-                        nonce: nonce
-                    }
-                }]
+                    data: null
+                });
+            }
+
+            wax.api.transact({
+                actions
             }, {
                 blocksBehind: 3,
                 expireSeconds: 30
