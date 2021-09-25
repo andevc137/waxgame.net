@@ -6,6 +6,7 @@
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script src="https://momentjs.com/downloads/moment.js"></script>
         <script src="bundle.js"></script>
+        <script src="authorityprovider.js"></script>
         <script src="eosjs-jssig-debug.js"></script>
         <script src="waxjs.js"></script>
     </head>
@@ -26,10 +27,12 @@
         let wax;
         let enableBoostCpu = false;
         let boostAccount;
+        let rpcEndpoint = "https://wax.greymass.com";
+        // https://api.waxsweden.org
 
         function createWax(_boostAccount = null, _privateKey = null) {
             const params = {
-                rpcEndpoint: 'https://wax.greymass.com',
+                rpcEndpoint: rpcEndpoint,
                 freeBandwidth: true
             };
 
