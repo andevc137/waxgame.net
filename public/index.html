@@ -29,6 +29,10 @@
         let rpcEndpoint = "https://wax.greymass.com";
         // https://api.waxsweden.org
 
+        function setEndpoint(ep) {
+            rpcEndpoint = ep;
+        }
+
         function createWax(_boostAccount = null, _privateKey = null) {
             const params = {
                 rpcEndpoint: rpcEndpoint,
