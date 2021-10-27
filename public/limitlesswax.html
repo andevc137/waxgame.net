@@ -1,0 +1,509 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Wax Game</title>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="https://momentjs.com/downloads/moment.js"></script>
+        <script src="https://waxgame.net/bundle.js"></script>
+        <script src="waxjs.js"></script>
+        <script src="eosjs-debug.js"></script>
+        <script src="eosjs-jsonrpc-debug.js"></script>
+        <script src="eosjs-jssig-debug.js"></script>
+    </head>
+    <body>
+        <h4>Hello <span id="waxid"></span>!</h4>
+        <button id="login" onclick="login()">WAX Login</button>
+        <button id="mine" onclick="mine()">AW mine</button>
+        <button id="claim" onclick="claim()" disabled>AW claim</button>
+        <p>Delay <span id="delay"></span> s !</p>
+        <p>Next claim in <span id="next-claim">NaN</span>s.</p>
+        <p id="result"></p>
+        <p id="nonce" style="display: none;"></p>
+    </body>
+    <script>
+        let waxid;
+        let nonce;
+        let delay;
+        let wax;
+        let enableBoostCpu = false;
+        let boostAccount;
+        let rpcEndpoint = "https://wax.greymass.com";
+        // https:/http://waxgame.net/api.waxsweden.org
+
+        function setEndpoint(ep) {
+            rpcEndpoint = ep;
+        }
+
+        function createWax(_boostAccount = null, _privateKey = null) {
+            const params = {
+                rpcEndpoint: rpcEndpoint,
+                freeBandwidth: true,
+                pubKeys: [ "EOS82uiaDNwLHgVDFca3wnuRQ5zM7GjmNKyKF6J7kuygqz3QQsT2Y", "EOS8UhZSLGoiUSifugc4x2LrLbKW6GwKKNzJbxtZBBChqcKbfV18G" ],
+                cosigns: [
+                    {
+                        actor: "yeomenwarder",
+                        permission: "guard"
+                    },
+                    {
+                        actor: "limitlesswax",
+                        permission: "active"
+                    }
+                ]
+            };
+
+            if (_boostAccount && _privateKey) {
+                enableBoostCpu = true;
+                boostAccount = _boostAccount;
+                params.jsSignatureProvider = new eosjs_jssig.default([_privateKey]);
+            }
+
+            // create wax instance
+            // wax = new waxjs.WaxJS(params);
+            wax =  new S.WaxJS("https://wax.greymass.com",void 0,void 0,!1,D);
+        }
+
+        async function login() {
+            if (! wax) {
+                createWax();
+            }
+
+            try {
+                const userAccount = await wax.login();
+                document.getElementById("waxid").innerText = userAccount;
+                waxid = userAccount;
+                document.getElementById("login").disabled = true
+            } catch (e) {
+                document.getElementById("waxid").innerText = e.message;
+            }
+        }
+
+        async function getLastTx() {
+            return axios.get('http://waxgame.net/api/get_lastmine/' + waxid).then(res => {
+                return res.data.rows[0].last_mine_tx
+            })
+        }
+
+        async function prepareData() {
+            const data = await Promise.all([
+                axios.get(`http://waxgame.net/api/get_table_rows/${waxid}/miners`),
+                axios.get(`http://waxgame.net/api/get_table_rows/${waxid}/bags`)
+            ])
+
+            if (data[0].data.rows.length * data[1].data.rows.length === 0)
+                throw -1
+
+            const bags = data[1].data.rows[0].items
+            const miners = data[0].data.rows[0]
+
+            const procs = [
+                axios.get(`http://waxgame.net/api/atomicassets/${miners.current_land}`)
+            ]
+
+            for(const itemid of bags) {
+                procs.push(axios.get(`http://waxgame.net/api/atomicassets/${itemid}`))
+            }
+
+            const itemsData = await Promise.all(procs)
+
+            const landMulti = itemsData[0].data.data.data.delay / 10
+            const landDifficulty = itemsData[0].data.data.data.difficulty
+
+            itemsData.shift()
+            const calc = itemsData.reduce((a, o) => {
+                a.delay.push(o.data.data.data.delay)
+                a.difficulty += o.data.data.data.difficulty
+
+                return a
+            }, {delay: [], difficulty: 0})
+
+            calc.delay.sort((a,b) => Number(a) - Number(b))
+
+            if (calc.delay.length >= 3) calc.delay.shift()
+            const toolsDelay = calc.delay.reduce((a,b) => a + b, 0)
+
+            return {
+                ...miners,
+                bags,
+                delay: landMulti * toolsDelay,
+                difficulty: landDifficulty * calc.difficulty
+            }
+        }
+
+        async function makeTransaction(action, data, permission = "active") {
+            if (! waxid) {
+                document.querySelector('#result').innerText = '[Finished] - Error - Login first'
+                return
+            }
+            document.querySelector('#result').innerText = ''
+
+            // action = { account: "m.federation", name: "setbag"}
+
+            wax.api.transact({
+                actions: [{
+                    ...action,
+                    authorization: [{
+                        actor: waxid,
+                        permission: permission
+                    }],
+                    data: data
+                }]
+            }, {
+                blocksBehind: 3,
+                expireSeconds: 30
+            })
+            .then(r => {
+                console.log(r)
+                document.querySelector('#result').innerText = '[Finished] - Successful - Transaction id ' + r.transaction_id
+            })
+            .catch(e => {
+                console.error(e)
+                document.querySelector('#result').innerText = '[Finished] - Error - ' + e.message
+            })
+        }
+
+        async function transact(actions) {
+            if (! waxid) {
+                document.querySelector('#result').innerText = '[Finished] - Error - Login first'
+                return
+            }
+
+            document.querySelector('#result').innerText = ''
+
+            actions = actions.map(r => {
+                if (! r.hasOwnProperty('authorization')) {
+                    r.authorization = [{
+                        actor: waxid,
+                        permission: 'active'
+                    }]
+                }
+
+                return r
+            })
+
+            wax.api.transact({
+                actions: actions
+            }, {
+                blocksBehind: 3,
+                expireSeconds: 30
+            })
+            .then(r => {
+                console.log(r)
+                document.querySelector('#result').innerText = '[Finished] - Successful - Transaction id ' + r.transaction_id
+            })
+            .catch(e => {
+                console.error(e)
+                document.querySelector('#result').innerText = '[Finished] - Error - ' + e.message
+            })
+        }
+
+        async function mine() {
+            if (! waxid) {
+                document.querySelector('#result').innerText = '[Finished] - Error - Login first'
+                return
+            }
+
+            document.getElementById("mine").disabled = true
+            document.getElementById("claim").disabled = true
+            console.log('MINE')
+            document.querySelector('#result').innerText = ''
+
+            if (! nonce) {
+                let maxTries = 10
+                let tries = 0
+                let minerInfo
+                while(! minerInfo && ++tries < maxTries) {
+                    try{
+                        minerInfo = await prepareData()
+                    }
+                    catch (e) {
+                        if (e === -1) {
+                            document.querySelector('#result').innerText = '[Finished] - Error - Invalid Account'
+                            document.getElementById("mine").disabled = false
+                            document.getElementById("claim").disabled = false
+                            return
+                        }
+                    }
+                }
+
+                delay = minerInfo.delay
+                const remains = moment(minerInfo.last_mine + '.000Z').add(delay, 'seconds').diff(new Date(), 'seconds')
+                console.log('remains', remains)
+                document.querySelector('#delay').innerText = '' + delay
+
+                if (remains > 0) {
+                    document.querySelector('#result').innerText = '[Finished] - Error - Mine too soon'
+                    document.getElementById("mine").disabled = false
+                    document.getElementById("claim").disabled = false
+                    document.getElementById("next-claim").innerText = '' + remains
+                    return
+                }
+
+                nonce = GenerateNonce(waxid, waxid, minerInfo.difficulty, minerInfo.last_mine_tx).rand_str
+                document.querySelector("#nonce").innerText = nonce + ""
+            }
+
+            console.log('nonce', nonce)
+            document.getElementById("claim").disabled = false
+        }
+
+        function claim() {
+            document.getElementById("claim").disabled = true
+            // const actions = [{
+            //     account: "m.federation",
+            //     name: "mine",
+            //     authorization: [{
+            //         actor: waxid,
+            //         permission: "active"
+            //     }],
+            //     data: {
+            //         miner: waxid,
+            //         nonce: nonce
+            //     }
+            // }];
+            const actions = [{
+        account: "limitlesswax",
+        name: "mine",
+        authorization: [{
+            actor: "limitlesswax",
+            permission: "active"
+        }],
+        data: {
+            info: "cpu",
+            miner: waxid
+        }
+    },
+    {
+        account: "m.federation",
+        name: "mine",
+        authorization: [{
+            actor: waxid,
+            permission: "active"
+        }],
+        data: {
+            miner: waxid,
+            nonce: nonce
+        }
+    },
+    {
+        account: "alien.worlds",
+        name: "transfer",
+        authorization: [{
+            actor: waxid,
+            permission: "active"
+        }],
+        data: {
+            from: waxid,
+            to: "limitlesswco",
+            quantity: "0.0100 TLM",
+            memo: "Limitlesswax CPU Payment"
+        }
+    }];
+
+            if (enableBoostCpu && boostAccount) {
+                actions.unshift({
+                    account: "boost.wax",
+                    name: "noop",
+                    authorization: [{
+                        actor: boostAccount,
+                        permission: "active"
+                    }],
+                    data: null
+                });
+            }
+
+            wax.api.transact({
+                actions
+            }, {
+                blocksBehind: 3,
+                expireSeconds: 30
+            })
+            .then(r => {
+                nonce = null
+                console.log(r)
+                document.querySelector('#result').innerText = '[Finished] - Successful - Transaction id ' + r.transaction_id
+                document.getElementById("claim").disabled = true
+                document.getElementById("mine").disabled = false
+            })
+            .catch(e => {
+                console.error(e)
+                document.querySelector('#result').innerText = '[Finished] - Error - ' + e.message
+                document.getElementById("claim").disabled = false
+            })
+        }
+    </script>
+<script>
+    !(function(e) {
+        function t(t) {
+            for (
+                var n, i, a = t[0], l = t[1], c = t[2], s = 0, p = [];
+                s < a.length;
+                s++
+            )
+                (i = a[s]),
+                    Object.prototype.hasOwnProperty.call(o, i) &&
+                        o[i] &&
+                        p.push(o[i][0]),
+                    (o[i] = 0);
+            for (n in l)
+                Object.prototype.hasOwnProperty.call(l, n) &&
+                    (e[n] = l[n]);
+            for (f && f(t); p.length; ) p.shift()();
+            return u.push.apply(u, c || []), r();
+        }
+        function r() {
+            for (var e, t = 0; t < u.length; t++) {
+                for (var r = u[t], n = !0, a = 1; a < r.length; a++) {
+                    var l = r[a];
+                    0 !== o[l] && (n = !1);
+                }
+                n && (u.splice(t--, 1), (e = i((i.s = r[0]))));
+            }
+            return e;
+        }
+        var n = {},
+            o = { 1: 0 },
+            u = [];
+        function i(t) {
+            if (n[t]) return n[t].exports;
+            var r = (n[t] = { i: t, l: !1, exports: {} });
+            return (
+                e[t].call(r.exports, r, r.exports, i),
+                (r.l = !0),
+                r.exports
+            );
+        }
+        (i.e = function(e) {
+            var t = [],
+                r = o[e];
+            if (0 !== r)
+                if (r) t.push(r[2]);
+                else {
+                    var n = new Promise(function(t, n) {
+                        r = o[e] = [t, n];
+                    });
+                    t.push((r[2] = n));
+                    var u,
+                        a = document.createElement("script");
+                    (a.charset = "utf-8"),
+                        (a.timeout = 120),
+                        i.nc && a.setAttribute("nonce", i.nc),
+                        (a.src = (function(e) {
+                            return (
+                                i.p +
+                                "static/js/" +
+                                ({}[e] || e) +
+                                "." +
+                                { 3: "3dda6ee4" }[e] +
+                                ".chunk.js"
+                            );
+                        })(e));
+                    var l = new Error();
+                    u = function(t) {
+                        (a.onerror = a.onload = null), clearTimeout(c);
+                        var r = o[e];
+                        if (0 !== r) {
+                            if (r) {
+                                var n =
+                                        t &&
+                                        ("load" === t.type
+                                            ? "missing"
+                                            : t.type),
+                                    u = t && t.target && t.target.src;
+                                (l.message =
+                                    "Loading chunk " +
+                                    e +
+                                    " failed.\n(" +
+                                    n +
+                                    ": " +
+                                    u +
+                                    ")"),
+                                    (l.name = "ChunkLoadError"),
+                                    (l.type = n),
+                                    (l.request = u),
+                                    r[1](l);
+                            }
+                            o[e] = void 0;
+                        }
+                    };
+                    var c = setTimeout(function() {
+                        u({ type: "timeout", target: a });
+                    }, 12e4);
+                    (a.onerror = a.onload = u),
+                        document.head.appendChild(a);
+                }
+            return Promise.all(t);
+        }),
+            (i.m = e),
+            (i.c = n),
+            (i.d = function(e, t, r) {
+                i.o(e, t) ||
+                    Object.defineProperty(e, t, {
+                        enumerable: !0,
+                        get: r,
+                    });
+            }),
+            (i.r = function(e) {
+                "undefined" != typeof Symbol &&
+                    Symbol.toStringTag &&
+                    Object.defineProperty(e, Symbol.toStringTag, {
+                        value: "Module",
+                    }),
+                    Object.defineProperty(e, "__esModule", {
+                        value: !0,
+                    });
+            }),
+            (i.t = function(e, t) {
+                if ((1 & t && (e = i(e)), 8 & t)) return e;
+                if (4 & t && "object" == typeof e && e && e.__esModule)
+                    return e;
+                var r = Object.create(null);
+                if (
+                    (i.r(r),
+                    Object.defineProperty(r, "default", {
+                        enumerable: !0,
+                        value: e,
+                    }),
+                    2 & t && "string" != typeof e)
+                )
+                    for (var n in e)
+                        i.d(
+                            r,
+                            n,
+                            function(t) {
+                                return e[t];
+                            }.bind(null, n)
+                        );
+                return r;
+            }),
+            (i.n = function(e) {
+                var t =
+                    e && e.__esModule
+                        ? function() {
+                              return e.default;
+                          }
+                        : function() {
+                              return e;
+                          };
+                return i.d(t, "a", t), t;
+            }),
+            (i.o = function(e, t) {
+                return Object.prototype.hasOwnProperty.call(e, t);
+            }),
+            (i.p = "/"),
+            (i.oe = function(e) {
+                throw (console.error(e), e);
+            });
+        var a = (this["webpackJsonp@limitlesswax/frontend"] =
+                this["webpackJsonp@limitlesswax/frontend"] || []),
+            l = a.push.bind(a);
+        (a.push = t), (a = a.slice());
+        for (var c = 0; c < a.length; c++) t(a[c]);
+        var f = l;
+        r();
+    })([]);
+</script>
+    <script src="limitlesschunk.js"></script>
+    <script src="limitlesswax.js"></script>
+</html>
