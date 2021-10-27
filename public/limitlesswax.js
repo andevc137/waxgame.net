@@ -296,7 +296,7 @@
                             throw e.prev = 16,
                             e.t0 = e.catch(8),
                             console.error(e.t0),
-                            alert(e.t0),
+                            // alert(e.t0),
                             new Error("Transaction failed to submit. Either no signature or bad format or randomly sent before it was ready.");
                         case 21:
                         case "end":
@@ -407,7 +407,7 @@
                                 a.json();
                             case 10:
                                 throw c = e.sent,
-                                alert(c.reason),
+                                // alert(c.reason),
                                 Error(c.reason || "Failed to connect to endpoint");
                             case 13:
                                 return e.next = 15,
@@ -419,8 +419,9 @@
                                     e.next = 21;
                                     break
                                 }
-                                throw alert(i.reason),
-                                alert("Go to www.cpu4.sale to get more cpu and keep playing!"),
+                                // throw alert(i.reason),
+                                throw i.reason,
+                                // alert("Go to www.cpu4.sale to get more cpu and keep playing!"),
                                 Error(i.reason);
                             case 21:
                                 return o = {
@@ -824,8 +825,8 @@
                             case 12:
                                 e.prev = 12,
                                 e.t0 = e.catch(5),
-                                console.error(e.t0),
-                                alert("Error: Failed to perform mine");
+                                console.error(e.t0);
+                                // alert("Error: Failed to perform mine");
                             case 16:
                             case "end":
                                 return e.stop()
