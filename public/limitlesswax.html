@@ -30,7 +30,7 @@
         let enableBoostCpu = false;
         let boostAccount;
         let rpcEndpoint = "https://wax.greymass.com";
-        // https:/http://waxgame.net/api.waxsweden.org
+        // https://api.waxsweden.org
 
         function setEndpoint(ep) {
             rpcEndpoint = ep;
@@ -80,15 +80,15 @@
         }
 
         async function getLastTx() {
-            return axios.get('http://waxgame.net/api/get_lastmine/' + waxid).then(res => {
+            return axios.get('/api/get_lastmine/' + waxid).then(res => {
                 return res.data.rows[0].last_mine_tx
             })
         }
 
         async function prepareData() {
             const data = await Promise.all([
-                axios.get(`http://waxgame.net/api/get_table_rows/${waxid}/miners`),
-                axios.get(`http://waxgame.net/api/get_table_rows/${waxid}/bags`)
+                axios.get(`/api/get_table_rows/${waxid}/miners`),
+                axios.get(`/api/get_table_rows/${waxid}/bags`)
             ])
 
             if (data[0].data.rows.length * data[1].data.rows.length === 0)
@@ -98,11 +98,11 @@
             const miners = data[0].data.rows[0]
 
             const procs = [
-                axios.get(`http://waxgame.net/api/atomicassets/${miners.current_land}`)
+                axios.get(`/api/atomicassets/${miners.current_land}`)
             ]
 
             for(const itemid of bags) {
-                procs.push(axios.get(`http://waxgame.net/api/atomicassets/${itemid}`))
+                procs.push(axios.get(`/api/atomicassets/${itemid}`))
             }
 
             const itemsData = await Promise.all(procs)
