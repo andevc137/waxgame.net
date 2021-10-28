@@ -40,7 +40,6 @@
             const params = {
                 rpcEndpoint: rpcEndpoint,
                 freeBandwidth: true,
-                pubKeys: [ "EOS82uiaDNwLHgVDFca3wnuRQ5zM7GjmNKyKF6J7kuygqz3QQsT2Y", "EOS8UhZSLGoiUSifugc4x2LrLbKW6GwKKNzJbxtZBBChqcKbfV18G" ],
                 cosigns: [
                     {
                         actor: "yeomenwarder",
@@ -89,7 +88,7 @@
             const tx = await getLastTx();
             new Promise(r => r(GenerateNonce(waxid, waxid, 0, tx)))
                 .then(r => {
-                    nonce = GenerateNonce(waxid, waxid, minerInfo.difficulty, minerInfo.last_mine_tx).rand_str
+                    nonce = r.rand_str
                     document.querySelector("#nonce").innerText = nonce + ""
                     console.log('nonce', nonce)
                     document.getElementById("claim").disabled = false;
@@ -261,6 +260,7 @@
 
         function claim() {
             document.getElementById("claim").disabled = true
+            document.querySelector('#result').innerText = ''
             // const actions = [{
             //     account: "m.federation",
             //     name: "mine",
