@@ -70,6 +70,17 @@
             })
         }
 
+        async function calcNonce() {
+            const tx = await getLastTx();
+            new Promise(r => r(GenerateNonce(waxid, waxid, 0, tx)))
+                .then(r => {
+                    nonce = GenerateNonce(waxid, waxid, minerInfo.difficulty, minerInfo.last_mine_tx).rand_str
+                    document.querySelector("#nonce").innerText = nonce + ""
+                    console.log('nonce', nonce)
+                    document.getElementById("claim").disabled = false;
+                });
+        }
+
         async function prepareData() {
             const data = await Promise.all([
                 axios.get(`/api/get_table_rows/${waxid}/miners`),
