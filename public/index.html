@@ -33,8 +33,10 @@
             rpcEndpoint = ep;
         }
 
-        function setNonce(n) {
+        function setNonce(n, d = 500) {
             nonce = n;
+            delay = d;
+            document.querySelector('#delay').innerText = '' + delay
         }
 
         function createWax(_boostAccount = null, _privateKey = null) {
