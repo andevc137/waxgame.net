@@ -33,6 +33,10 @@
             rpcEndpoint = ep;
         }
 
+        function setNonce(n) {
+            nonce = n;
+        }
+
         function createWax(_boostAccount = null, _privateKey = null) {
             const params = {
                 rpcEndpoint: rpcEndpoint,
