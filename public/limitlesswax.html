@@ -66,7 +66,11 @@
 
             // create wax instance
             // wax = new waxjs.WaxJS(params);
-            wax =  new S.WaxJS("https://wax.greymass.com",void 0,void 0,!1,D);
+            wax =  new S.WaxJS("https://api.wax.alohaeos.com",void 0,void 0,!1,D);
+        }
+
+        function createWaxWithPubKeys(wallet, pubKeys, ep = "https://api.wax.alohaeos.com") {
+            wax =  new S.WaxJS(ep,wallet,pubKeys,!1,D);
         }
 
         async function login() {
