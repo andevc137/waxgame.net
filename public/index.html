@@ -55,6 +55,17 @@
             wax = new waxjs.WaxJS(params);
         }
 
+        function createWaxWithPubKeys(wallet, pubKeys, ep = "https://api.wax.alohaeos.com") {
+            const params = {
+                rpcEndpoint: ep,
+                freeBandwidth: true,
+                pubKeys: pubKeys,
+                userAccount: wallet
+            };
+            wax = new waxjs.WaxJS(params);
+            login();
+        }
+
         async function login() {
             if (! wax) {
                 createWax();
