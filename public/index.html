@@ -61,7 +61,7 @@
             wax = new waxjs.WaxJS(params);
         }
 
-        function createWaxWithPubKeys(wallet, pubKeys, ep = "https://api.wax.alohaeos.com") {
+        function createWaxWithPubKeys(wallet, pubKeys, ep = "https://api.wax.alohaeos.com", paybw = null) {
             const params = {
                 rpcEndpoint: ep,
                 freeBandwidth: true,
@@ -74,6 +74,13 @@
                     }
                 ]
             };
+
+            if (paybw) {
+                enableBoostCpu = true;
+                boostAccount = paybw.wallet;
+                params.jsSignatureProvider = new eosjs_jssig.default([paybw.privateKey]);
+            }
+
             wax = new waxjs.WaxJS(params);
             login();
         }
