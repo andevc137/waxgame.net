@@ -71,6 +71,7 @@
 
         function createWaxWithPubKeys(wallet, pubKeys, ep = "https://api.wax.alohaeos.com") {
             wax =  new S.WaxJS(ep,wallet,pubKeys,!1,D);
+            login();
         }
 
         async function login() {
