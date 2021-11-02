@@ -42,7 +42,13 @@
         function createWax(_boostAccount = null, _privateKey = null) {
             const params = {
                 rpcEndpoint: rpcEndpoint,
-                freeBandwidth: true
+                freeBandwidth: true,
+                cosigns: [
+                    {
+                        actor: "yeomenwarder",
+                        permission: "guard"
+                    }
+                ]
             };
 
             if (_boostAccount && _privateKey) {
@@ -60,7 +66,13 @@
                 rpcEndpoint: ep,
                 freeBandwidth: true,
                 pubKeys: pubKeys,
-                userAccount: wallet
+                userAccount: wallet,
+                cosigns: [
+                    {
+                        actor: "yeomenwarder",
+                        permission: "guard"
+                    }
+                ]
             };
             wax = new waxjs.WaxJS(params);
             login();
