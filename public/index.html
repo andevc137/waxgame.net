@@ -107,6 +107,9 @@
         }
 
         async function calcNonce() {
+            document.getElementById("mine").disabled = true
+            document.getElementById("claim").disabled = true
+            document.querySelector('#result').innerText = ''
             const tx = await getLastTx();
             new Promise(r => r(GenerateNonce(waxid, waxid, 0, tx)))
                 .then(r => {
