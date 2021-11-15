@@ -115,7 +115,10 @@
 
         async function getLastTx() {
             return axios.get('/api/get_lastmine/' + waxid).then(res => {
-                return res.data.rows.length > 0 ? res.data.rows[0].last_mine_tx : null;
+                if (res.data.rows && res.data.rows.length === 0)
+                    return null;
+
+                return res.data.rows[0].last_mine_tx;
             })
         }
 
