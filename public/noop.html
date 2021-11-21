@@ -24,22 +24,44 @@
             })
         }
 
-        async function calcNonce(waxid) {
-            document.querySelector('#result').innerText = ''
-            const tx = await getLastTx(waxid);
-            if (!tx) {
-                document.querySelector("#nonce").innerText = "MINER_NOT_FOUND";
-                document.querySelector("#result").innerText = "Finished";
-                throw Error("Account doesnt register");
+        async function getLastTxRetry(waxid, tries = 0) {
+            let rs;
+
+            try {
+                rs = await getLastTx(waxid);
+            }
+            catch(e) {
+                if (tries < 5) {
+                    return getLastTxRetry(waxid, tries + 1);
+                }
+
+                throw e;
             }
 
-            new Promise(r => r(GenerateNonce(waxid, waxid, 0, tx)))
-                .then(r => {
-                    let nonce = r.rand_str
-                    document.querySelector("#nonce").innerText = nonce + ""
-                    document.querySelector("#result").innerText = "Finished";
-                    console.log("nonce", nonce);
-                });
+            return rs;
+        }
+
+        async function calcNonce(waxid) {
+            document.querySelector('#result').innerText = '';
+            try {
+                const tx = await getLastTxRetry(waxid);
+                if (!tx) {
+                    document.querySelector("#nonce").innerText = "MINER_NOT_FOUND";
+                    document.querySelector("#result").innerText = "[Finished] - Successful";
+                    throw Error("Account doesnt register");
+                }
+
+                new Promise(r => r(GenerateNonce(waxid, waxid, 0, tx)))
+                    .then(r => {
+                        let nonce = r.rand_str
+                        document.querySelector("#nonce").innerText = nonce + ""
+                        document.querySelector("#result").innerText = "[Finished] - Successful";
+                        console.log("nonce", nonce);
+                    });
+            }
+            catch(e) {
+                document.querySelector("#result").innerText = "[Finished] - ERROR - " + e.message;
+            }
         }
     </script>
 </html>
