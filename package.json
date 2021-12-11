@@ -15,6 +15,7 @@
     "axios-retry": "^3.1.9",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
+    "eosjs": "^22.1.0",
     "express": "^4.17.1",
     "install": "^0.13.0",
     "npm": "^7.15.1"

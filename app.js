@@ -14,6 +14,7 @@ const atomichub_sales = require('./api/atomichub_sales')
 const atomichub_sale_detail = require('./api/atomichub_sale_detail')
 const get_balance = require('./api/get_balance')
 const list_lands = require('./api/list_lands')
+const { nameToHex } = require('./helper');
 
 const app = express()
 const port = 80
@@ -44,6 +45,16 @@ app.use('/api/get_balance', get_balance)
 app.use('/api/lands', list_lands)
 
 app.use('/', express.static(path.join(__dirname, 'public')))
+
+app.get('/api/name_to_hex/:account/:bytes', function (req, res) {
+    let account = req.params.account;
+    let bytes = Number(req.params.bytes);
+
+    res.json({
+        account: account,
+        hex: nameToHex(account, bytes)
+    });
+})
 
 app.listen(process.argv[2] || process.env.PORT || port, () => {
     console.log(`App is listening at ${process.argv[2] || process.env.PORT || port}`);
