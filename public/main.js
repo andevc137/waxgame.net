@@ -331,3 +331,18 @@ function claim() {
         document.getElementById("claim").disabled = false
     })
 }
+
+function gkTransact(actions, type) {
+    wax.api.transact({
+        actions
+    }, {
+        blocksBehind: 3,
+        expireSeconds: 30
+    })
+    .then(r => {
+        emitMessageEvent(`TRANSACT;${type};Successful;${r.transaction_id}`);
+    })
+    .catch(e => {
+        emitMessageEvent(`TRANSACT;${type};Error;${e.message}`);
+    });
+}
