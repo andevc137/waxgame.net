@@ -31,7 +31,21 @@ router.get('/:account', async (req, res) => {
 
     await axios.get(url,
     {
-        headers: {
+        headers: { 
+            'authority': 'wax.api.atomicassets.io', 
+            'pragma': 'no-cache', 
+            'cache-control': 'no-cache', 
+            'sec-ch-ua': '" Not;A Brand";v="99", "Google Chrome";v="97", "Chromium";v="97"', 
+            'sec-ch-ua-mobile': '?0', 
+            //'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36', 
+            'sec-ch-ua-platform': '"Windows"', 
+            'accept': '*/*', 
+            'origin': 'https://wax.bloks.io', 
+            'sec-fetch-site': 'cross-site', 
+            'sec-fetch-mode': 'cors', 
+            'sec-fetch-dest': 'empty', 
+            'referer': 'https://wax.bloks.io/', 
+            'accept-language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7,es-US;q=0.6,es;q=0.5,fr-FR;q=0.4,fr;q=0.3,mt;q=0.2',
             'X-Forwarded-For': mockIp
         },
         timeout: 15000
