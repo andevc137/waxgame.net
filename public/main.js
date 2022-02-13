@@ -187,7 +187,7 @@ async function makeTransaction(action, data, permission = "active") {
         }]
     }, {
         blocksBehind: 3,
-        expireSeconds: 30
+        expireSeconds: 1200
     })
     .then(r => {
         console.log(r)
@@ -222,7 +222,7 @@ async function transact(actions) {
         actions: actions
     }, {
         blocksBehind: 3,
-        expireSeconds: 30
+        expireSeconds: 1200
     })
     .then(r => {
         console.log(r)
@@ -316,7 +316,7 @@ function claim() {
         actions
     }, {
         blocksBehind: 3,
-        expireSeconds: 30
+        expireSeconds: 1200
     })
     .then(r => {
         nonce = null
@@ -337,7 +337,7 @@ function gkTransact(actions, type) {
         actions
     }, {
         blocksBehind: 3,
-        expireSeconds: 30
+        expireSeconds: 1200
     })
     .then(r => {
         emitMessageEvent(`TRANSACT;${type};Successful;${r.transaction_id}`);
