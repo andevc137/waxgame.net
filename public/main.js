@@ -199,7 +199,7 @@ async function makeTransaction(action, data, permission = "active") {
     })
 }
 
-async function transact(actions) {
+async function transact(actions, config = {}) {
     if (! waxid) {
         document.querySelector('#result').innerText = '[Finished] - Error - Login first'
         return
@@ -219,7 +219,8 @@ async function transact(actions) {
     })
 
     wax.api.transact({
-        actions: actions
+        actions: actions,
+        ...config
     }, {
         blocksBehind: 3,
         expireSeconds: 1200
