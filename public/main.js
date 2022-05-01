@@ -278,6 +278,8 @@ async function broadcast() {
         return
     }
 
+    document.querySelector('#result').innerText = ''
+
     wax.api.pushSignedTransaction(signedTxData)
     .then(r => {
         signedTxData = null;
