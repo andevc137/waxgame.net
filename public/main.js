@@ -282,7 +282,6 @@ async function broadcast() {
 
     wax.api.pushSignedTransaction(signedTxData)
     .then(r => {
-        signedTxData = null;
         console.log(r)
         document.querySelector('#result').innerText = '[Finished] - Successful - Transaction id ' + r.transaction_id
     })
