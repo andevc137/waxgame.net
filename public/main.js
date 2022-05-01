@@ -265,7 +265,7 @@ async function signTx(actions, config = {}) {
     })
     .then(r => {
         signedTxData = r;
-        document.querySelector('#result').innerText = '[Finished] - Successful - Transaction id ' + r.transaction_id
+        document.querySelector('#result').innerText = '[Finished] - Signed'
     })
     .catch(e => {
         document.querySelector('#result').innerText = '[Finished] - Error - ' + e.message
