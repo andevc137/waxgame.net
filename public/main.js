@@ -5,6 +5,7 @@ let wax;
 let enableBoostCpu = false;
 let boostAccount;
 let rpcEndpoint = "https://wax.greymass.com";
+let signedTxData = null;
 // https://api.waxsweden.org
 
 function setEndpoint(ep) {
@@ -226,6 +227,60 @@ async function transact(actions, config = {}) {
         expireSeconds: 1200
     })
     .then(r => {
+        console.log(r)
+        document.querySelector('#result').innerText = '[Finished] - Successful - Transaction id ' + r.transaction_id
+    })
+    .catch(e => {
+        console.error(e)
+        document.querySelector('#result').innerText = '[Finished] - Error - ' + e.message
+    })
+}
+
+async function signTx(actions, config = {}) {
+    if (! waxid) {
+        document.querySelector('#result').innerText = '[Finished] - Error - Login first'
+        return
+    }
+
+    document.querySelector('#result').innerText = ''
+
+    actions = actions.map(r => {
+        if (! r.hasOwnProperty('authorization')) {
+            r.authorization = [{
+                actor: waxid,
+                permission: 'active'
+            }]
+        }
+
+        return r
+    })
+
+    wax.api.transact({
+        actions: actions,
+        ...config
+    }, {
+        blocksBehind: 3,
+        expireSeconds: 1200,
+        broadcast: false
+    })
+    .then(r => {
+        signedTxData = r;
+        document.querySelector('#result').innerText = '[Finished] - Successful - Transaction id ' + r.transaction_id
+    })
+    .catch(e => {
+        document.querySelector('#result').innerText = '[Finished] - Error - ' + e.message
+    });
+}
+
+async function broadcast() {
+    if (! signedTxData) {
+        document.querySelector('#result').innerText = '[Finished] - Error - Sign first'
+        return
+    }
+
+    wax.api.pushSignedTransaction(signedTxData)
+    .then(r => {
+        signedTxData = null;
         console.log(r)
         document.querySelector('#result').innerText = '[Finished] - Successful - Transaction id ' + r.transaction_id
     })
